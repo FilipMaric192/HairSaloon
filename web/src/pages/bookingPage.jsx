@@ -68,7 +68,7 @@ export default function BookingPage() {
     setTime("");
   };
 
-  const handleReserve = () => {
+  const handleReserve = async () => {
     setError("");
     if (!service) {
       setError("Odaberite uslugu!");
@@ -77,8 +77,28 @@ export default function BookingPage() {
     if (!time) {
       setError("Odaberite vrijeme!");
       return;
-    } else {
-      console.log({ service, date, time });
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/reservation", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({ service, date, time }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Greška kod rezervacije");
+        return;
+      }
+
+      alert("Rezervacija uspješna");
+      setTime("");
+    } catch {
+      setError("Server nije dostupan");
     }
   };
 
