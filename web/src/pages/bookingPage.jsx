@@ -1,11 +1,12 @@
 import Header from "../components/header";
 import Footer from "../components/footer";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 export default function BookingPage() {
   const [time, setTime] = useState("");
   const [service, setService] = useState("");
   const [error, setError] = useState("");
+  const [bookedTimes, setBookedTimes] = useState([]);
 
   const getTodayString = () => {
     const d = new Date();
@@ -41,9 +42,13 @@ export default function BookingPage() {
     const startMinutes = timeToMinutes(startTime);
     const endMinutes = timeToMinutes(endTime);
     for (let i = startMinutes; i <= endMinutes; i += stepMinutes) {
-      const available = !isToday || i > nowMinutes;
+      const t = minutesToTime(i);
+      const notInPast = !isToday || i > nowMinutes;
+      const notBooked = !bookedTimes.includes(t);
+
+      const available = notInPast && notBooked;
       slots.push({
-        time: minutesToTime(i),
+        time: t,
         available: available,
       });
     }
@@ -80,10 +85,10 @@ export default function BookingPage() {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/reservation", {
+      const response = await fetch("http://localhost:5000/api/reservations", {
         method: "POST",
         headers: {
-          "Content-type": "application/json",
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ service, date, time }),
       });
@@ -96,11 +101,35 @@ export default function BookingPage() {
       }
 
       alert("Rezervacija uspješna");
+      setBookedTimes((prev) => [...prev, time]);
       setTime("");
     } catch {
       setError("Server nije dostupan");
     }
   };
+
+  useEffect(() => {
+    const fetchBookedTimes = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/reservations?date=${date}`,
+        );
+        const data = await response.json();
+
+        if (!response.ok) {
+          setBookedTimes([]);
+          return;
+        }
+
+        setBookedTimes(data.bookedTimes || []);
+      } catch {
+        setBookedTimes([]);
+      }
+    };
+    fetchBookedTimes();
+  }, [date]);
+
+  console.log("BOOKED:", bookedTimes);
 
   const isAvailable =
     "border border-gray-200 rounded-2xl py-3 bg-white text-center font-medium cursor-pointer transition hover:shadow-sm active:scale-[0.98] transition-all";
