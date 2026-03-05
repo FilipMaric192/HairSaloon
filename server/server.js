@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import "dotenv/config";
+import Reservation from "./models/Reservation.js";
 
 const app = express();
 
@@ -16,7 +17,7 @@ app.get("/", (req, res) => {
   res.send("API radi ");
 });
 
-app.post("/api/reservations", (req, res) => {
+app.post("/api/reservations", async (req, res) => {
   const { service, date, time } = req.body;
 
   if (!service || !date || !time) {
@@ -40,26 +41,36 @@ app.post("/api/reservations", (req, res) => {
     return res.status(400).json({ error: "Termin je zauzet!" });
   }
 
-  reservations.push({ service, date, time });
-
-  return res.status(201).json({
-    message: "Rezervacija spremljena",
-    data: { service, date, time },
-  });
+  try {
+    const created = await Reservation.create({ service, date, time });
+    return res.status(201).json({
+      message: "Rezervacija spremljena",
+      data: created,
+    });
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({ error: "Termin zauzet" });
+    }
+    console.error(err);
+    return res.status(500).json({ error: "Greška na serveru" });
+  }
 });
 
-app.get("/api/reservations", (req, res) => {
+app.get("/api/reservations", async (req, res) => {
   const { date } = req.query;
 
-  if (!date) {
-    return res.json({ reservations });
+  try {
+    if (!date) {
+      const all = await Reservation.find().sort({ createdAt: -1 });
+      res.json({ reservations: all });
+    }
+
+    const bookedTimes = await Reservation.find({ date }).distinct("time");
+    res.json({ date, bookedTimes });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Greška na serveru" });
   }
-
-  const bookedTimes = reservations
-    .filter((r) => r.date === date)
-    .map((r) => r.time);
-
-  return res.json({ date, bookedTimes });
 });
 
 mongoose
