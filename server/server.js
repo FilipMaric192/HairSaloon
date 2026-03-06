@@ -33,14 +33,6 @@ app.post("/api/reservations", async (req, res) => {
     return res.status(400).json({ error: "Termin je u prošlosti." });
   }
 
-  const exists = reservations.some((r) => {
-    return r.date === date && r.time === time;
-  });
-
-  if (exists) {
-    return res.status(400).json({ error: "Termin je zauzet!" });
-  }
-
   try {
     const created = await Reservation.create({
       service,
