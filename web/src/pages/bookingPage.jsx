@@ -87,9 +87,11 @@ export default function BookingPage() {
     }
     if (!name.trim()) {
       setError("Upišite ime");
+      return;
     }
     if (!phone.trim()) {
       setError("Upišite broj telefona");
+      return;
     }
 
     try {
