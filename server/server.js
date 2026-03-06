@@ -18,9 +18,9 @@ app.get("/", (req, res) => {
 });
 
 app.post("/api/reservations", async (req, res) => {
-  const { service, date, time } = req.body;
+  const { service, date, time, name, phone } = req.body;
 
-  if (!service || !date || !time) {
+  if (!service || !date || !time || !name || !phone) {
     return res.status(400).json({ error: "..." });
   }
 
@@ -42,7 +42,13 @@ app.post("/api/reservations", async (req, res) => {
   }
 
   try {
-    const created = await Reservation.create({ service, date, time });
+    const created = await Reservation.create({
+      service,
+      date,
+      time,
+      name,
+      phone,
+    });
     return res.status(201).json({
       message: "Rezervacija spremljena",
       data: created,
@@ -62,7 +68,7 @@ app.get("/api/reservations", async (req, res) => {
   try {
     if (!date) {
       const all = await Reservation.find().sort({ createdAt: -1 });
-      res.json({ reservations: all });
+      return res.json({ reservations: all });
     }
 
     const bookedTimes = await Reservation.find({ date }).distinct("time");

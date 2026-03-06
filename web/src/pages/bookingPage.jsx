@@ -7,6 +7,8 @@ export default function BookingPage() {
   const [service, setService] = useState("");
   const [error, setError] = useState("");
   const [bookedTimes, setBookedTimes] = useState([]);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
 
   const getTodayString = () => {
     const d = new Date();
@@ -83,6 +85,12 @@ export default function BookingPage() {
       setError("Odaberite vrijeme!");
       return;
     }
+    if (!name.trim()) {
+      setError("Upišite ime");
+    }
+    if (!phone.trim()) {
+      setError("Upišite broj telefona");
+    }
 
     try {
       const response = await fetch("http://localhost:5000/api/reservations", {
@@ -90,7 +98,7 @@ export default function BookingPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ service, date, time }),
+        body: JSON.stringify({ service, date, time, name, phone }),
       });
 
       const data = await response.json();
@@ -171,6 +179,30 @@ export default function BookingPage() {
                   <option value="3">Pranje</option>
                 </select>
               </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <label>Ime:</label>
+              <input
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                }}
+                className="flex-1 h-11 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-gray-400 px-3 py-2 rounded-xl border border-gray-300"
+                placeholder="Upišite ime"
+              ></input>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <label>Kontakt:</label>
+              <input
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                }}
+                className="flex-1 h-11 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-gray-400 px-3 py-2 rounded-xl border border-gray-300"
+                placeholder="+385/9...."
+              ></input>
             </div>
 
             <div className="mt-6 w-full rounded-2xl bg-gray-50/70 border border-gray-100 p-5 shadow-sm ring-1 ring-black/5">
