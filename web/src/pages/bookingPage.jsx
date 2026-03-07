@@ -176,9 +176,9 @@ export default function BookingPage() {
                   <option value="" disabled>
                     Odaberi...
                   </option>
-                  <option value="1">Šišanje</option>
-                  <option value="2">Brijanje</option>
-                  <option value="3">Pranje</option>
+                  <option value="Šišanje">Šišanje</option>
+                  <option value="Brijanje">Brijanje</option>
+                  <option value="Pranje">Pranje</option>
                 </select>
               </div>
             </div>
